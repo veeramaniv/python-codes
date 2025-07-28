@@ -1,0 +1,90 @@
+Python code to convert csv to json 
+
+```python
+import csv
+import json
+import os
+from datetime import datetime
+
+def csv_to_json(csv_file_path, json_file_path):
+    """
+    Convert a CSV file to JSON format
+    
+    Args:
+        csv_file_path (str): Path to input CSV file
+        json_file_path (str): Path to output JSON file
+    
+    Returns:
+        str: Success message or error message
+    """
+    try:
+        # Check if input file exists
+        if not os.path.exists(csv_file_path):
+            return f"Error: Input file {csv_file_path} does not exist"
+        
+        # Check if input file is empty
+        if os.path.getsize(csv_file_path) == 0:
+            return f"Error: Input file {csv_file_path} is empty"
+        
+        # List to store the data
+        data = []
+        
+        # Read the CSV file
+        with open(csv_file_path, 'r', encoding='utf-8') as csv_file:
+            # Create CSV reader
+            csv_reader = csv.DictReader(csv_file)
+            
+            # Check if file has required columns
+            required_columns = ['timestamp', 'message', 'logStreamName']
+            if not all(col in csv_reader.fieldnames for col in required_columns):
+                return f"Error: Input file missing required columns: {required_columns}"
+            
+            # Convert each row to dictionary and append to data list
+            for row in csv_reader:
+                # Convert scientific notation timestamp to regular number
+                try:
+                    timestamp = float(row['timestamp'])
+                    row['timestamp'] = int(timestamp)
+                except (ValueError, KeyError):
+                    print(f"Warning: Could not convert timestamp for row: {row}")
+                
+                data.append(row)
+        
+        # Create directory for output file if it doesn't exist
+        os.makedirs(os.path.dirname(json_file_path), exist_ok=True)
+        
+        # Write to JSON file
+        with open(json_file_path, 'w', encoding='utf-8') as json_file:
+            json.dump(data, json_file, indent=2, ensure_ascii=False)
+        
+        return f"Successfully converted {csv_file_path} to {json_file_path}\nNumber of records processed: {len(data)}"
+    
+    except Exception as e:
+        return f"An error occurred: {str(e)}"
+
+if __name__ == "__main__":
+    # Specify the full paths
+    csv_file_path = '/Users/vmveera/Downloads/log-events-viewer-result (1).csv'
+    json_file_path = '/Users/vmveera/Downloads/output.json'
+    
+    result = csv_to_json(csv_file_path, json_file_path)
+    print(result)
+```
+
+To run this script:
+
+1. Save it as a Python file (e.g., `csv_to_json_converter.py`) anywhere on your computer
+2. Open a terminal
+3. Navigate to the directory where you saved the script
+4. Run the script using:
+```bash
+python csv_to_json_converter.py
+```
+
+The script will:
+1. Read the CSV file from `/Users/vmveera/Downloads/log-events-viewer-result (1).csv`
+2. Convert it to JSON format
+3. Save the JSON file as `/Users/vmveera/Downloads/output.json`
+4. Print a success message with the number of records processed
+
+If you want to save the JSON file in a different location, just modify the `json_file_path` variable to your desired location.
